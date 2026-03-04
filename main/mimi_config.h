@@ -37,6 +37,36 @@
 #ifndef MIMI_SECRET_SEARCH_KEY
 #define MIMI_SECRET_SEARCH_KEY      ""
 #endif
+#ifndef MIMI_SECRET_STT_URL
+#define MIMI_SECRET_STT_URL         ""
+#endif
+#ifndef MIMI_SECRET_STT_API_KEY
+#define MIMI_SECRET_STT_API_KEY     ""
+#endif
+#ifndef MIMI_SECRET_STT_MODEL
+#define MIMI_SECRET_STT_MODEL       ""
+#endif
+#ifndef MIMI_SECRET_TTS_URL
+#define MIMI_SECRET_TTS_URL         ""
+#endif
+#ifndef MIMI_SECRET_TTS_API_KEY
+#define MIMI_SECRET_TTS_API_KEY     ""
+#endif
+#ifndef MIMI_SECRET_TTS_VOICE
+#define MIMI_SECRET_TTS_VOICE       "Cherry"
+#endif
+#ifndef MIMI_SECRET_TTS_MODEL
+#define MIMI_SECRET_TTS_MODEL       ""
+#endif
+#ifndef MIMI_SECRET_TTS_LANGUAGE
+#define MIMI_SECRET_TTS_LANGUAGE    "Chinese"
+#endif
+
+/* Qwen voice API defaults (DashScope) */
+#define MIMI_QWEN_STT_URL           "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+#define MIMI_QWEN_STT_MODEL         "qwen3-asr-flash"
+#define MIMI_QWEN_TTS_URL           "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
+#define MIMI_QWEN_TTS_MODEL         "qwen-tts-latest"
 
 /* WiFi */
 #define MIMI_WIFI_MAX_RETRY          10
@@ -51,6 +81,37 @@
 #define MIMI_TG_POLL_CORE            0
 #define MIMI_TG_CARD_SHOW_MS         3000
 #define MIMI_TG_CARD_BODY_SCALE      3
+
+/* Voice (ReSpeaker XVF3800 over I2S) */
+#define MIMI_VOICE_ENABLED_DEFAULT    0
+#define MIMI_VOICE_CHAT_ID            "voice_local"
+#define MIMI_VOICE_SAMPLE_RATE        16000
+#define MIMI_VOICE_BITS_PER_SAMPLE    16
+#define MIMI_VOICE_FRAME_MS           20
+#define MIMI_VOICE_MAX_UTTERANCE_MS   10000
+#define MIMI_VOICE_SILENCE_END_MS     600
+#define MIMI_VOICE_VAD_THRESHOLD      700
+#define MIMI_VOICE_CAPTURE_STACK      (10 * 1024)
+#define MIMI_VOICE_PLAYBACK_STACK     (8 * 1024)
+#define MIMI_VOICE_TASK_PRIO          5
+#define MIMI_VOICE_CORE               0
+#define MIMI_VOICE_PLAYBACK_QUEUE_LEN 4
+/* Set valid board pins in mimi_secrets.h to enable audio I/O */
+#ifndef MIMI_VOICE_I2S_PORT
+#define MIMI_VOICE_I2S_PORT           0
+#endif
+#ifndef MIMI_VOICE_I2S_BCLK
+#define MIMI_VOICE_I2S_BCLK           (-1)
+#endif
+#ifndef MIMI_VOICE_I2S_WS
+#define MIMI_VOICE_I2S_WS             (-1)
+#endif
+#ifndef MIMI_VOICE_I2S_DIN
+#define MIMI_VOICE_I2S_DIN            (-1)
+#endif
+#ifndef MIMI_VOICE_I2S_DOUT
+#define MIMI_VOICE_I2S_DOUT           (-1)
+#endif
 
 /* Agent Loop */
 #define MIMI_AGENT_STACK             (24 * 1024)

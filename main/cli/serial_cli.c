@@ -11,6 +11,7 @@
 #include "cron/cron_service.h"
 #include "heartbeat/heartbeat.h"
 #include "skills/skill_loader.h"
+#include "voice/voice_channel.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -200,6 +201,45 @@ static int cmd_heap_info(int argc, char **argv)
     printf("Total free:    %d bytes\n",
            (int)esp_get_free_heap_size());
     return 0;
+}
+
+/* --- voice_status command --- */
+static int cmd_voice_status(int argc, char **argv)
+{
+    voice_channel_status_t st = {0};
+    voice_channel_get_status(&st);
+
+    printf("Voice enabled:   %s\n", st.enabled ? "yes" : "no");
+    printf("I2S ready:       %s\n", st.i2s_ready ? "yes" : "no");
+    printf("Playing now:     %s\n", st.is_playing ? "yes" : "no");
+    printf("STT configured:  %s\n", st.stt_configured ? "yes" : "no");
+    printf("TTS configured:  %s\n", st.tts_configured ? "yes" : "no");
+    printf("Voice chat_id:   %s\n", MIMI_VOICE_CHAT_ID);
+    return 0;
+}
+
+/* --- voice_say command --- */
+static struct {
+    struct arg_str *text;
+    struct arg_end *end;
+} voice_say_args;
+
+static int cmd_voice_say(int argc, char **argv)
+{
+    int nerrors = arg_parse(argc, argv, (void **)&voice_say_args);
+    if (nerrors != 0) {
+        arg_print_errors(stderr, voice_say_args.end, argv[0]);
+        return 1;
+    }
+
+    esp_err_t err = voice_channel_speak_text(voice_say_args.text->sval[0]);
+    if (err == ESP_OK) {
+        printf("Queued for voice playback.\n");
+        return 0;
+    }
+
+    printf("voice_say failed: %s\n", esp_err_to_name(err));
+    return 1;
 }
 
 /* --- set_proxy command --- */
@@ -727,6 +767,25 @@ esp_err_t serial_cli_init(void)
         .func = &cmd_heap_info,
     };
     esp_console_cmd_register(&heap_cmd);
+
+    /* voice_status */
+    esp_console_cmd_t voice_status_cmd = {
+        .command = "voice_status",
+        .help = "Show voice channel status",
+        .func = &cmd_voice_status,
+    };
+    esp_console_cmd_register(&voice_status_cmd);
+
+    /* voice_say */
+    voice_say_args.text = arg_str1(NULL, NULL, "<text>", "Text to synthesize and play");
+    voice_say_args.end = arg_end(1);
+    esp_console_cmd_t voice_say_cmd = {
+        .command = "voice_say",
+        .help = "Synthesize and play text via TTS",
+        .func = &cmd_voice_say,
+        .argtable = &voice_say_args,
+    };
+    esp_console_cmd_register(&voice_say_cmd);
 
     /* set_search_key */
     search_key_args.key = arg_str1(NULL, NULL, "<key>", "Brave Search API key");

@@ -24,6 +24,7 @@
 #include "cron/cron_service.h"
 #include "heartbeat/heartbeat.h"
 #include "skills/skill_loader.h"
+#include "voice/voice_channel.h"
 
 static const char *TAG = "mimi";
 
@@ -72,16 +73,21 @@ static void outbound_dispatch_task(void *arg)
         ESP_LOGI(TAG, "Dispatching response to %s:%s", msg.channel, msg.chat_id);
 
         if (strcmp(msg.channel, MIMI_CHAN_TELEGRAM) == 0) {
-            esp_err_t send_err = telegram_send_message(msg.chat_id, msg.content);
-            if (send_err != ESP_OK) {
-                ESP_LOGE(TAG, "Telegram send failed for %s: %s", msg.chat_id, esp_err_to_name(send_err));
-            } else {
-                ESP_LOGI(TAG, "Telegram send success for %s (%d bytes)", msg.chat_id, (int)strlen(msg.content));
-            }
+            // esp_err_t send_err = telegram_send_message(msg.chat_id, msg.content);
+            // if (send_err != ESP_OK) {
+            //     ESP_LOGE(TAG, "Telegram send failed for %s: %s", msg.chat_id, esp_err_to_name(send_err));
+            // } else {
+            //     ESP_LOGI(TAG, "Telegram send success for %s (%d bytes)", msg.chat_id, (int)strlen(msg.content));
+            // }
         } else if (strcmp(msg.channel, MIMI_CHAN_WEBSOCKET) == 0) {
             esp_err_t ws_err = ws_server_send(msg.chat_id, msg.content);
             if (ws_err != ESP_OK) {
                 ESP_LOGW(TAG, "WS send failed for %s: %s", msg.chat_id, esp_err_to_name(ws_err));
+            }
+        } else if (strcmp(msg.channel, MIMI_CHAN_VOICE) == 0) {
+            esp_err_t voice_err = voice_channel_speak_text(msg.content);
+            if (voice_err != ESP_OK) {
+                ESP_LOGW(TAG, "Voice playback failed: %s", esp_err_to_name(voice_err));
             }
         } else if (strcmp(msg.channel, MIMI_CHAN_SYSTEM) == 0) {
             ESP_LOGI(TAG, "System message [%s]: %.128s", msg.chat_id, msg.content);
@@ -120,11 +126,12 @@ void app_main(void)
     ESP_ERROR_CHECK(session_mgr_init());
     ESP_ERROR_CHECK(wifi_manager_init());
     ESP_ERROR_CHECK(http_proxy_init());
-    ESP_ERROR_CHECK(telegram_bot_init());
+    // ESP_ERROR_CHECK(telegram_bot_init());
     ESP_ERROR_CHECK(llm_proxy_init());
     ESP_ERROR_CHECK(tool_registry_init());
     ESP_ERROR_CHECK(cron_service_init());
     ESP_ERROR_CHECK(heartbeat_init());
+    ESP_ERROR_CHECK(voice_channel_init());
     ESP_ERROR_CHECK(agent_loop_init());
 
     /* Start Serial CLI first (works without WiFi) */
@@ -148,9 +155,10 @@ void app_main(void)
 
             /* Start network-dependent services */
             ESP_ERROR_CHECK(agent_loop_start());
-            ESP_ERROR_CHECK(telegram_bot_start());
+            // ESP_ERROR_CHECK(telegram_bot_start());
             cron_service_start();
             heartbeat_start();
+            voice_channel_start();
             ESP_ERROR_CHECK(ws_server_start());
 
             ESP_LOGI(TAG, "All services started!");
